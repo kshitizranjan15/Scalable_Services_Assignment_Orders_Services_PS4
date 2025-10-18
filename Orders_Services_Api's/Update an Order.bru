@@ -1,0 +1,36 @@
+meta {
+  name: Update an Order
+  type: http
+  seq: 4
+}
+
+put {
+  url: http://127.0.0.1:8000/orders/101
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "order_id": 101,
+    "customer_id": 501,
+    "order_total": 899.99,
+    "order_status": "SHIPPED",
+    "payment_status": "PAID",
+    "created_at": "2025-10-18T12:00:00",
+    "items": [
+      {
+        "product_id": 301,
+        "sku": "SKU-RED-SHOES",
+        "quantity": 2,
+        "unit_price": 449.99
+      }
+    ]
+  }
+  
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

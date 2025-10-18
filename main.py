@@ -86,6 +86,50 @@ def get_order_by_id(order_id: int):
     finally:
         conn.close()
 
+@app.put("/orders/{order_id}")
+def update_order(order_id: int, updated_order: Order):
+    """Update order details (header only)."""
+    conn = get_connection("order_db")
+    cur = conn.cursor()
+    try:
+        cur.execute("""
+            UPDATE Orders 
+            SET customer_id=%s, order_status=%s, payment_status=%s, order_total=%s 
+            WHERE order_id=%s
+        """, (updated_order.customer_id, updated_order.order_status, updated_order.payment_status,
+              updated_order.order_total, order_id))
+        conn.commit()
+
+        if cur.rowcount == 0:
+            raise HTTPException(status_code=404, detail="Order not found")
+
+        return {"message": "✅ Order updated successfully"}
+    except Exception as e:
+        conn.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        conn.close()
+
+
+@app.delete("/orders/{order_id}")
+def delete_order(order_id: int):
+    """Delete order and its related items."""
+    conn = get_connection("order_db")
+    cur = conn.cursor()
+    try:
+        cur.execute("DELETE FROM Order_Items WHERE order_id = %s", (order_id,))
+        cur.execute("DELETE FROM Orders WHERE order_id = %s", (order_id,))
+        conn.commit()
+
+        if cur.rowcount == 0:
+            raise HTTPException(status_code=404, detail="Order not found")
+
+        return {"message": f"🗑️ Order {order_id} deleted successfully"}
+    except Exception as e:
+        conn.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        conn.close()
 
 if __name__ == "__main__":
     uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)

@@ -69,11 +69,14 @@ OpenAPI docs: `http://127.0.0.1:8000/docs`
 
 ## API Endpoints
 
+
 Orders
 
 - `GET /orders?limit={n}` — list orders (default `limit=10`)
 - `GET /orders/{order_id}` — get order header and its items
 - `POST /orders` — insert a new order (payload matches `Order` Pydantic model in `main.py`)
+- `PUT /orders/{order_id}` — update order header fields (customer_id, order_status, payment_status, order_total). The endpoint expects the same `Order` model but will update header columns for the specified order.
+- `DELETE /orders/{order_id}` — delete an order and its associated order items.
 
 Request examples are included in the `csv_files/` and can be tested with curl/Postman.
 
@@ -92,6 +95,86 @@ Minimal `POST /orders` payload:
 		{ "product_id": 1, "sku": "SKU-001", "quantity": 2, "unit_price": 19.99 }
 	]
 }
+```
+
+
+Endpoint examples (curl)
+
+1) List orders (GET /orders)
+
+```bash
+curl "http://127.0.0.1:8000/orders?limit=5"
+```
+
+Sample response (array):
+
+```json
+[
+	{ "order_id": 1, "customer_id": 44, "order_status": "CREATED", "payment_status": "FAILED", "order_total": 966.29, "created_at": "2024-09-18 14:40:32" },
+	{ "order_id": 2, "customer_id": 98, "order_status": "CANCELLED", "payment_status": "FAILED", "order_total": 786.94, "created_at": "2023-02-06 02:26:38" }
+]
+```
+
+2) Get order by id (GET /orders/{order_id})
+
+```bash
+curl "http://127.0.0.1:8000/orders/123"
+```
+
+Sample response (object with items):
+
+```json
+{
+	"order_id": 123,
+	"customer_id": 456,
+	"order_status": "PENDING",
+	"payment_status": "UNPAID",
+	"order_total": 99.99,
+	"created_at": "2025-01-01 12:00:00",
+	"items": [
+		{ "order_item_id": 1, "order_id": 123, "product_id": 1, "sku": "SKU-001", "quantity": 2, "unit_price": 19.99 }
+	]
+}
+```
+
+3) Create a new order (POST /orders)
+
+```bash
+curl -X POST "http://127.0.0.1:8000/orders" \
+	-H "Content-Type: application/json" \
+	-d '{"order_id": 123, "customer_id": 456, "order_total": 99.99, "order_status": "PENDING", "payment_status": "UNPAID", "items": [{"product_id":1,"sku":"SKU-001","quantity":2,"unit_price":19.99}] }'
+```
+
+Successful response:
+
+```json
+{ "message": "✅ Order inserted successfully" }
+```
+
+4) Update order header (PUT /orders/{order_id})
+
+```bash
+curl -X PUT "http://127.0.0.1:8000/orders/123" \
+	-H "Content-Type: application/json" \
+	-d '{"order_id":123, "customer_id":999, "order_total":149.99, "order_status":"PROCESSING", "payment_status":"PAID", "items":[] }'
+```
+
+Successful response:
+
+```json
+{ "message": "✅ Order updated successfully" }
+```
+
+5) Delete order (DELETE /orders/{order_id})
+
+```bash
+curl -X DELETE "http://127.0.0.1:8000/orders/123"
+```
+
+Successful response:
+
+```json
+{ "message": "🗑️ Order 123 deleted successfully" }
 ```
 
 ## Notes & Caveats
