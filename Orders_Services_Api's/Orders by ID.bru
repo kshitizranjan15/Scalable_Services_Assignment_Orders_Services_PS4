@@ -1,0 +1,16 @@
+meta {
+  name: Orders by ID
+  type: http
+  seq: 2
+}
+
+get {
+  url: http://127.0.0.1:8000/orders/999
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

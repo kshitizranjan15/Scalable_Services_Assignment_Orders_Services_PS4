@@ -1,0 +1,28 @@
+meta {
+  name: Add a new Order
+  type: http
+  seq: 2
+}
+
+post {
+  url: http://127.0.0.1:8000/orders
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "order_id": 999,
+    "customer_id": 123,
+    "order_total": 500.50,
+    "items": [
+      {"product_id": 1, "sku": "SKU001", "quantity": 2, "unit_price": 250.25}
+    ]
+  }
+  
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
