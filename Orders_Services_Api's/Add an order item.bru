@@ -1,0 +1,27 @@
+meta {
+  name: Add an order item
+  type: http
+  seq: 8
+}
+
+post {
+  url: http://127.0.0.1:8000/order_items
+  body: json
+  auth: inherit
+}
+
+body:json {
+   {
+      "order_item_id": 7023,
+      "order_id": 203,
+      "product_id": 105,
+      "sku": "SKU001",
+      "quantity": 3,
+      "unit_price": 385.72
+    }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

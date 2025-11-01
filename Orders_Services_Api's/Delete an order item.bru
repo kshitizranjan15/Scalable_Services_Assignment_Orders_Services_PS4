@@ -1,0 +1,16 @@
+meta {
+  name: Delete an order item
+  type: http
+  seq: 10
+}
+
+delete {
+  url: http://127.0.0.1:8000/order_items/803
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
