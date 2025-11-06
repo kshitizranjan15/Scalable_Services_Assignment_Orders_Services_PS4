@@ -2,6 +2,7 @@ from fastapi import FastAPI, HTTPException, Query
 from db_utils import get_connection
 from pydantic import BaseModel
 from datetime import datetime
+from typing import Optional
 import uvicorn
 
 app = FastAPI(title="ECI Orders API", version="1.0")
@@ -9,19 +10,19 @@ app = FastAPI(title="ECI Orders API", version="1.0")
 # ----------- MODELS ------------
 
 class OrderItem(BaseModel):
-    order_id: int
     product_id: int
+    order_id: Optional[int] = None
     sku: str
     quantity: int
     unit_price: float
 
 class Order(BaseModel):
-    order_id: int
+    order_id: Optional[int] = None
     customer_id: int
     order_total: float
     order_status: str = "PENDING"
     payment_status: str = "UNPAID"
-    created_at: datetime = datetime.now()
+    created_at: Optional[datetime] = None
     items: list[OrderItem]
 
 # ----------- ORDER ENDPOINTS ------------
@@ -36,6 +37,10 @@ def get_orders(limit: int = Query(default=10, gt=0)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     finally:
+        try:
+            cur.close()
+        except Exception:
+            pass
         conn.close()
 
 @app.post("/orders")
@@ -61,7 +66,10 @@ def add_order(order: Order):
         conn.rollback()
         raise HTTPException(status_code=500, detail=str(e))
     finally:
-        cur.close()
+        try:
+            cur.close()
+        except Exception:
+            pass
         conn.close()
 
 @app.get("/orders/{order_id}")
@@ -80,6 +88,10 @@ def get_order_by_id(order_id: int):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     finally:
+        try:
+            cur.close()
+        except Exception:
+            pass
         conn.close()
 
 @app.put("/orders/{order_id}")
@@ -103,6 +115,10 @@ def update_order(order_id: int, updated_order: Order):
         conn.rollback()
         raise HTTPException(status_code=500, detail=str(e))
     finally:
+        try:
+            cur.close()
+        except Exception:
+            pass
         conn.close()
 
 @app.delete("/orders/{order_id}")
@@ -136,6 +152,10 @@ def get_order_items(limit: int = Query(default=10, gt=0)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     finally:
+        try:
+            cur.close()
+        except Exception:
+            pass
         conn.close()
 
 @app.get("/order_items/{order_item_id}")
@@ -151,6 +171,10 @@ def get_order_item_by_id(order_item_id: int):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     finally:
+        try:
+            cur.close()
+        except Exception:
+            pass
         conn.close()
 
 @app.post("/order_items")
@@ -198,6 +222,10 @@ def update_order_item(order_item_id: int, updated_order_item: OrderItem):
         conn.rollback()
         raise HTTPException(status_code=500, detail=str(e))
     finally:
+        try:
+            cur.close()
+        except Exception:
+            pass
         conn.close()
 
 @app.delete("/order_items/{order_item_id}")
@@ -219,4 +247,5 @@ def delete_order_item(order_item_id: int):
         conn.close()
 
 if __name__ == "__main__":
-    uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)
+    # Bind to 0.0.0.0 so the server is reachable from Docker containers / host mappings
+    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
